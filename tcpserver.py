@@ -2,13 +2,6 @@ from operator import add
 import socket
 from typing import Required
 
-
-
-def log(msg, *args):
-  PRE_SUFFIX = "=="
-  formatted = msg.format(*args)
-  print(f"{PRE_SUFFIX} {formatted} {PRE_SUFFIX}")
-
 # ソケット通信(=トランスポート層)
 # TCP/IPで言うと　
 #   TCP/UDPを使うところ
@@ -45,6 +38,14 @@ class TCPServer:
       client_socket.close()
     finally:
       log("サーバ停止しました")
+
+"""
+  見やすくログを出すメソッド。プレースホルダ対応。
+"""
+def log(msg, *args):
+  PRE_SUFFIX = "=="
+  formatted = msg.format(*args)
+  print(f"{PRE_SUFFIX} {formatted} {PRE_SUFFIX}")
 
 if __name__ == "__main__":
   server = TCPServer()
