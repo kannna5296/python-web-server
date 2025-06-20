@@ -1,6 +1,7 @@
 from operator import add
 import socket
 from typing import Required
+from utils import log
 
 
 # ソケット通信(=トランスポート層)
@@ -39,14 +40,6 @@ class TCPServer:
             client_socket.close()
         finally:
             log("サーバ停止しました")
-
-def log(msg, *args):
-    """
-    見やすくログを出すメソッド。プレースホルダ対応。
-    """
-    PRE_SUFFIX = "=="
-    formatted = msg.format(*args)
-    print(f"{PRE_SUFFIX} {formatted} {PRE_SUFFIX}")
 
 
 if __name__ == "__main__":
