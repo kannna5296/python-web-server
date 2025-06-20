@@ -31,3 +31,44 @@ with open("log.txt", "a") as f:
 with open("data.bin", "ab") as f:
     f.write(b"追加データ")
 ```
+
+## ソケット通信の基礎まとめ
+
+### ソケットとは？
+- アプリケーションがネットワーク通信を行うための"窓口"となる仕組み。
+- Pythonでは `socket.socket()` で作成し、TCP/UDPなどの通信プロトコルを利用できる。
+
+### ネットワーク階層とソケットの位置づけ
+
+```
+アプリケーション
+   ↑
+ソケット（socket）
+   ↑
+トランスポート層（TCP/UDP）
+   ↑
+ネットワーク層（IP/IPv6）
+   ↑
+物理層・データリンク層
+```
+- ソケットはTCP/UDP/IPなど下位プロトコルをまとめて扱う"上位の概念"
+
+### 主なソケットオプションの階層
+| レベル（level）              | 意味・用途                           | 例・備考                       |
+|-----------------------------|--------------------------------------|-------------------------------|
+| `socket.SOL_SOCKET`         | ソケット全体のオプション             | `SO_REUSEADDR`, `SO_KEEPALIVE` など |
+| `socket.IPPROTO_TCP`        | TCPプロトコル固有のオプション         | `TCP_NODELAY` など             |
+| `socket.IPPROTO_IP`         | IPプロトコル固有のオプション          | `IP_TTL` など                  |
+| `socket.IPPROTO_UDP`        | UDPプロトコル固有のオプション         | UDP用のオプション              |
+| `socket.IPPROTO_IPV6`       | IPv6プロトコル固有のオプション        | IPv6用のオプション             |
+
+### 例：アドレス再利用オプションの設定
+```python
+server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+```
+- `SOL_SOCKET` … ソケット全体のオプション
+- `SO_REUSEADDR` … アドレス再利用
+- `1` … 有効化
+
+### 参考
+- [Python公式: socket — 低レベルのネットワークインターフェース](https://docs.python.org/ja/3/library/socket.html)
