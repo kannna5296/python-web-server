@@ -28,13 +28,14 @@ class TCPServer:
       server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
       server_socket.bind(("localhost", 8080))
-      server_socket.listen(10)
+      server_socket.listen(10) #10は同時接続数みたいなもん
 
       log("クライアントからの接続を待ちます")
+      # 接続完了したsocketインスタンスと、クライアントのaddressがもらえる
       (client_socket, address) = server_socket.accept()
       log("クライアントからの接続が完了しました remote_address: {}", address)
 
-      request = client_socket.recv(4096)
+      request = client_socket.recv(4096) #データを4096バイトずつ受け取る
 
       # ログ追記
       with open("server_recv.txt", "wb") as f:
