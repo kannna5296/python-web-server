@@ -72,3 +72,33 @@ server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 ### 参考
 - [Python公式: socket — 低レベルのネットワークインターフェース](https://docs.python.org/ja/3/library/socket.html)
+
+## プロジェクト開始手順（コマンドまとめ）
+
+1. リポジトリをクローン
+```sh
+git clone <リポジトリURL>
+cd server-python
+```
+
+2. Python仮想環境の作成・有効化
+```sh
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+3. 依存パッケージのインストール（requirements.txt）
+```sh
+pip install -r requirements.txt
+```
+
+4. コード自動整形の実行
+```sh
+black .
+```
+
+---
+
+- 依存パッケージは requirements.txt で管理しています。
+- 必要に応じてパッケージを追加してください。
+- VSCode等のエディタ連携もおすすめです。
