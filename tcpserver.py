@@ -32,11 +32,18 @@ class TCPServer:
 
             request = client_socket.recv(4096)  # データを4096バイトずつ受け取る
 
-            # ログ追記
+            # クライアントから送られてきたデータをファイルに書き出す
             with open("server_recv.txt", "wb") as f:
                 f.write(request)
 
-            # 返事は特にせずに通信終了
+            # クライアントへ送信するレスポンスデータをファイルから取得する
+            with open("server_send.txt", "rb") as f:
+                response = f.read()
+
+            # クライアントへレスポンスを送信する
+            client_socket.send(response)
+
+            # 通信を終了させる
             client_socket.close()
         finally:
             log("サーバ停止しました")
