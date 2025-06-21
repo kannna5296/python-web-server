@@ -1,6 +1,6 @@
 from operator import add
 import socket
-from datetime import datetime
+import datetime
 from utils import log
 
 
@@ -43,7 +43,7 @@ class TCPServer:
             response_line = "HTTP/1.1 200 OK\r\n"
             # レスポンスヘッダーを生成
             response_header = ""
-            response_header += f"Date: {datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')}\r\n"
+            response_header += f"Date: {datetime.datetime.now(datetime.timezone.utc).strftime('%a, %d %b %Y %H:%M:%S GMT')}\r\n"
             response_header += "Host: HenaServer/0.1\r\n"
             response_header += f"Content-Length: {len(response_body.encode())}\r\n"
             response_header += "Connection: Close\r\n"
