@@ -1,4 +1,4 @@
-from operator import add
+import os
 import socket
 import datetime
 from utils import log
@@ -9,9 +9,16 @@ from utils import log
 #   TCP/UDPを使うところ
 #   インターネット層(IP)の一個上
 #   アプリケーション層(HTTP,SNTPとか)の一個下
-class TCPServer:
-    def serve(self):
+class WebServer:
+    """
+     WEBサーバを表す
+    """
 
+    # 実行ファイルのあるディレクトリ
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    # 静的配信するファイルを置くディレクトリ
+    STATIC_ROOT = os.path.join(BASE_DIR, "static")
+    def serve(self):
         log("サーバ起動します")
         try:
             server_socket = socket.socket()
@@ -36,8 +43,17 @@ class TCPServer:
             with open("server_recv.txt", "wb") as f:
                 f.write(request)
 
-                        # レスポンスボディを生成
-            response_body = "<html><body><h1>It works!</h1></body></html>"
+            request_line, remain = request.split(b"\r\n", maxsplit=1)
+            request_header, request_body = remain.split(b"\r\n\r\n", maxsplit=1)
+
+            method, path, http_version = request.decode().split(" ")
+
+            relative_path = path.lstrip("/")
+            static_file_path = os.path.join(self.STATIC_ROOT, relative_path)
+
+            # ファイルからレスポンスボディを生成　バイナリ、読み取り専用モード
+            with open(static_file_path, "rb") as f:
+                response_body = f.read()
 
             # レスポンスラインを生成
             response_line = "HTTP/1.1 200 OK\r\n"
@@ -45,13 +61,15 @@ class TCPServer:
             response_header = ""
             response_header += f"Date: {datetime.datetime.now(datetime.timezone.utc).strftime('%a, %d %b %Y %H:%M:%S GMT')}\r\n"
             response_header += "Host: HenaServer/0.1\r\n"
-            response_header += f"Content-Length: {len(response_body.encode())}\r\n"
+            response_header += f"Content-Length: {len(response_body)}\r\n"
             response_header += "Connection: Close\r\n"
             response_header += "Content-Type: text/html\r\n"
 
             # ヘッダーとボディを空行でくっつけた上でbytesに変換し、レスポンス全体を生成する
-            response = (response_line + response_header + "\r\n" + response_body).encode()
+            response = (response_line + response_header + "\r\n").encode() + response_body
 
+
+            # ソケット通信はバイト単位でデータを送受信する必要がある
             # クライアントへレスポンスを送信する
             client_socket.send(response)
 
@@ -62,5 +80,5 @@ class TCPServer:
 
 
 if __name__ == "__main__":
-    server = TCPServer()
+    server = WebServer()
     server.serve()
