@@ -48,8 +48,15 @@ class WebServer:
 
             method, path, http_version = request_line.decode().split(" ")
 
+            log("path: " + path)
             relative_path = path.lstrip("/")
+            log("relative_path: " + relative_path)
+
+            # デフォルトパス指定
+            if not relative_path:
+                relative_path = "index.html"
             static_file_path = os.path.join(self.STATIC_ROOT, relative_path)
+            log("static_file_path: " + static_file_path)
 
             # ファイルからレスポンスボディを生成　バイナリ、読み取り専用モード
             with open(static_file_path, "rb") as f:
