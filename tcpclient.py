@@ -1,14 +1,16 @@
 import socket
 from utils import log
 
+
 class TCPClient:
     """
     TCP通信を行うクライアント
     """
+
     def request(self):
         log("サーバ起動します")
 
-        try: 
+        try:
             client_socket = socket.socket()
             client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
@@ -32,6 +34,7 @@ class TCPClient:
             client_socket.close()
             log("クライアントを停止します。")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     client = TCPClient()
     client.request()
