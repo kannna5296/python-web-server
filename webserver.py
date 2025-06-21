@@ -46,7 +46,7 @@ class WebServer:
             request_line, remain = request.split(b"\r\n", maxsplit=1)
             request_header, request_body = remain.split(b"\r\n\r\n", maxsplit=1)
 
-            method, path, http_version = request.decode().split(" ")
+            method, path, http_version = request_line.decode().split(" ")
 
             relative_path = path.lstrip("/")
             static_file_path = os.path.join(self.STATIC_ROOT, relative_path)
