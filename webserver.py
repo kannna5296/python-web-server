@@ -43,6 +43,11 @@ class WebServer:
             with open("server_recv.txt", "wb") as f:
                 f.write(request)
 
+            # リクエスト全体を
+            # 1. リクエストライン(1行目)
+            # 2. リクエストヘッダー(2行目〜空行)
+            # 3. リクエストボディ(空行〜)
+            # にパースする
             request_line, remain = request.split(b"\r\n", maxsplit=1)
             request_header, request_body = remain.split(b"\r\n\r\n", maxsplit=1)
 
@@ -58,12 +63,17 @@ class WebServer:
             static_file_path = os.path.join(self.STATIC_ROOT, relative_path)
             log("static_file_path: " + static_file_path)
 
-            # ファイルからレスポンスボディを生成　バイナリ、読み取り専用モード
-            with open(static_file_path, "rb") as f:
-                response_body = f.read()
-
-            # レスポンスラインを生成
-            response_line = "HTTP/1.1 200 OK\r\n"
+            try:
+                # ファイルからレスポンスボディを生成　バイナリ、読み取り専用モード
+                with open(static_file_path, "rb") as f:
+                    response_body = f.read()
+                # レスポンスラインを生成
+                response_line = "HTTP/1.1 200 OK\r\n"
+            except OSError:
+                log("ファイルが見つかりませんでした")
+            # ファイルが見つからなかった場合は404を返す
+                response_body = b"<html><body><h1>404 Not Found</h1></body></html>"
+                response_line = "HTTP/1.1 404 Not Found\r\n"
             # レスポンスヘッダーを生成
             response_header = ""
             response_header += f"Date: {datetime.datetime.now(datetime.timezone.utc).strftime('%a, %d %b %Y %H:%M:%S GMT')}\r\n"
