@@ -20,6 +20,15 @@ class WebServer:
     # 静的配信するファイルを置くディレクトリ
     STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
+    # 拡張子とMIME Typeの対応
+    MIME_TYPES = {
+        "html": "text/html",
+        "css": "text/css",
+        "png": "image/png",
+        "jpg": "image/jpg",
+        "gif": "image/gif",
+    }
+
     def serve(self):
         log("サーバ起動します")
         try:
@@ -84,13 +93,19 @@ class WebServer:
                         )
                         response_line = "HTTP/1.1 404 Not Found\r\n"
 
+                    if "." in path:
+                        ext = path.rsplit(".", maxsplit=1)[-1]
+                    else:
+                        ext = ""
+                    content_type = self.MIME_TYPES.get(ext, "application/octet-stream")
+
                     # レスポンスヘッダーを生成
                     response_header = ""
                     response_header += f"Date: {datetime.datetime.now(datetime.timezone.utc).strftime('%a, %d %b %Y %H:%M:%S GMT')}\r\n"
                     response_header += "Host: HenaServer/0.1\r\n"
                     response_header += f"Content-Length: {len(response_body)}\r\n"
                     response_header += "Connection: Close\r\n"
-                    response_header += "Content-Type: text/html\r\n"
+                    response_header += f"Content-Type: {content_type}\r\n"
 
                     # ヘッダーとボディを空行でくっつけた上でbytesに変換し、レスポンス全体を生成する
                     response = (
@@ -105,7 +120,7 @@ class WebServer:
                     # リクエストの処理中に例外が発生した場合はコンソールにエラーログを出力し、
                     # 処理を続行する
                     print("=== リクエストの処理中にエラーが発生しました ===")
-                    traceback.print_exc() #スタックトレース
+                    traceback.print_exc()  # スタックトレース
 
                 finally:
                     # 例外が発生した場合も、発生しなかった場合も、TCP通信のcloseは行う
