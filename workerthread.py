@@ -2,6 +2,7 @@ import os
 import textwrap
 import traceback
 import re
+from urllib.parse import urlencode, parse_qs, quote, unquote
 from datetime import datetime, timezone
 from socket import socket
 from typing import Optional, Tuple
@@ -98,6 +99,29 @@ class WorkerThread(Thread):
                     </body>
                     </html>
                 """
+                response_body = textwrap.dedent(html).encode()
+
+                # Content-Typeを指定
+                content_type = "text/html, charset=UTF-8"
+
+                # レスポンスラインを生成
+                response_line = "HTTP/1.1 200 OK\r\n"
+            # pathがそれ以外のときは、静的ファイルからレスポンスを生成す
+            elif path_string == "/parameters":
+                if method == "GET":
+                    response_body = b"<html><body><h1>405 Method Not Allowed</h1></body></html>"
+                    content_type = "text/html; charset=UTF-8"
+                    response_line = "HTTP/1.1 405 Method Not Allowed\r\n"
+                elif method == "POST":
+                    post_params = parse_qs(request_body.decode())
+                    html = f"""\
+                        <html>
+                        <body>
+                            <h1>Parameters:</h1>
+                            <pre>{pformat(post_params)}</pre>                        
+                        </body>
+                        </html>
+                    """
                 response_body = textwrap.dedent(html).encode()
 
                 # Content-Typeを指定
@@ -232,7 +256,7 @@ class WorkerThread(Thread):
         Returns:
             str: 生成されたHTTPレスポンスヘッダー
         """
-        if path_string in ("", "/", "/now", "/show_request"):
+        if path_string in ("", "/", "/now", "/show_request", "/parameters"):
             ext = "html"
         else:
             ext = path_string.rsplit(".", maxsplit=1)[-1] if "." in path_string else ""
