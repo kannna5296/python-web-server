@@ -122,7 +122,7 @@ class WorkerThread(Thread):
                         </body>
                         </html>
                     """
-                response_body = textwrap.dedent(html).encode()
+                    response_body = textwrap.dedent(html).encode()
 
                 # Content-Typeを指定
                 content_type = "text/html, charset=UTF-8"
