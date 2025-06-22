@@ -27,12 +27,25 @@ class WorkerThread(Thread):
     }
 
     def __init__(self, client_socket: socket, address: Tuple[str, int]):
+        """
+        ワーカースレッドを初期化する
+
+        Args:
+            client_socket: クライアントとの通信を行うソケット
+            address: クライアントのアドレス情報 (IP, ポート)
+        """
         super().__init__()
 
         self.client_socket = client_socket
         self.client_address = address
 
-    def run(self) -> None:  # Javaでいうvoidみたいなこと
+    def run(self) -> None:
+        """
+        ワーカースレッドのメイン処理を実行する
+        
+        クライアントからのリクエストを受信し、適切なレスポンスを返す。
+        例外が発生した場合でもクライアントとの接続は確実にクローズする。
+        """
         try:
             request = self.client_socket.recv(4096)  # データを4096バイトずつ受け取る
 
@@ -75,13 +88,32 @@ class WorkerThread(Thread):
             self.client_socket.close()
 
     def parse_request(self, request: bytes) -> Tuple[str, str, str, bytes, bytes]:
+        """
+        HTTPリクエストをパースして各要素を抽出する
+
+        Args:
+            request: クライアントから受信したHTTPリクエスト（バイト列）
+
+        Returns:
+            Tuple[str, str, str, bytes, bytes]: 
+            (HTTPメソッド, パス, HTTPバージョン, リクエストヘッダー, リクエストボディ)
+        """
         request_line, remain = request.split(b"\r\n", maxsplit=1)
         request_header, request_body = remain.split(b"\r\n\r\n", maxsplit=1)
         method, path, http_version = request_line.decode().split(" ")
 
         return method, path, http_version, request_header, request_body
 
-    def get_static_file(self, path) -> str:
+    def get_static_file(self, path: str) -> str:
+        """
+        リクエストパスから静的ファイルの絶対パスを取得する
+
+        Args:
+            path: リクエストのパス（例: "/index.html", "/css/style.css"）
+
+        Returns:
+            str: 静的ファイルの絶対パス
+        """
         log("path: " + path)
         relative_path = path.lstrip("/")
         log("relative_path: " + relative_path)
@@ -94,7 +126,17 @@ class WorkerThread(Thread):
 
         return static_file_path
 
-    def create_response_body(self, static_file_path) -> Tuple[str, str]:
+    def create_response_body(self, static_file_path: str) -> Tuple[str, str]:
+        """
+        静的ファイルからレスポンスボディを生成する
+
+        Args:
+            static_file_path: 静的ファイルの絶対パス
+
+        Returns:
+            Tuple[str, str]: (HTTPステータスライン, レスポンスボディ)
+            ファイルが見つからない場合は404エラーページを返す
+        """
         try:
             # ファイルからレスポンスボディを生成　バイナリ、読み取り専用モード
             with open(static_file_path, "rb") as f:
@@ -109,7 +151,17 @@ class WorkerThread(Thread):
 
         return response_line, response_body.decode()
 
-    def create_response_header(self, path, content_length) -> str:
+    def create_response_header(self, path: str, content_length: int) -> str:
+        """
+        HTTPレスポンスヘッダーを生成する
+
+        Args:
+            path: リクエストパス（MIMEタイプの判定に使用）
+            content_length: レスポンスボディの長さ
+
+        Returns:
+            str: 生成されたHTTPレスポンスヘッダー
+        """
         if "." in path:
             ext = path.rsplit(".", maxsplit=1)[-1]
         else:
