@@ -186,7 +186,7 @@ class WorkerThread(Thread):
 
         return response_line, response_body.decode()
         
-    def build_response_header(self, path: str, response_body: bytes, content_type: Optional[str]) -> str:
+    def build_response_header(self, path_string: str, response_body: bytes, content_type: Optional[str]) -> str:
         """
         HTTPレスポンスヘッダーを生成する
 
@@ -197,11 +197,10 @@ class WorkerThread(Thread):
         Returns:
             str: 生成されたHTTPレスポンスヘッダー
         """
-        if "." in path:
-            ext = path.rsplit(".", maxsplit=1)[-1]
+        if path_string in ("", "/", "/now"):
+            ext = "html"
         else:
-            # パスが空または拡張子がない場合はhtmlとして扱う
-            ext = "html" if not path or path == "/" else ""
+            ext = path_string.rsplit(".", maxsplit=1)[-1] if "." in path_string else ""
         content_type = self.MIME_TYPES.get(ext, "application/octet-stream")
 
         # レスポンスヘッダーを生成
