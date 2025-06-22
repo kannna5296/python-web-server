@@ -1,5 +1,4 @@
 import os
-import re
 import traceback
 from datetime import datetime, timezone
 from socket import socket
@@ -113,7 +112,8 @@ class WorkerThread(Thread):
         if "." in path:
             ext = path.rsplit(".", maxsplit=1)[-1]
         else:
-            ext = ""
+            # パスが空または拡張子がない場合はhtmlとして扱う
+            ext = "html" if not path or path == "/" else ""
         content_type = self.MIME_TYPES.get(ext, "application/octet-stream")
 
         # レスポンスヘッダーを生成
