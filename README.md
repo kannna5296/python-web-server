@@ -178,3 +178,28 @@ parsed = parse_qs(query)   # {'name': ['Alice'], 'message': ['Hello World!']}
 encoded = quote('こんにちは')  # '%E3%81%93%E3%82%93%E3%81%AB%E3%81%A1%E3%81%AF'
 decoded = unquote(encoded) # 'こんにちは'
 ```
+
+### multipart/form-data について
+- ファイルアップロードや複数種類のデータ送信に使われるMIMEタイプ（Content-Type）
+- フォームの`<input type="file">`でファイルを送信する場合は自動的にこの形式になる
+- データは「パート（区切り）」ごとに分かれて送信され、各パートにヘッダーとボディがある
+- テキストデータもファイルも同じリクエストで送れる
+- 境界線（boundary）で各パートを区切る
+- Pythonでパースするには `cgi.FieldStorage` や `requests` ライブラリ、`werkzeug` などが便利
+
+#### 例（イメージ）
+```
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="name"
+
+Alice
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="hello.txt"
+Content-Type: text/plain
+
+Hello, world!
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+```
+- 上記は「name: Alice」と「file: hello.txt（内容: Hello, world!）」を同時に送信している例
