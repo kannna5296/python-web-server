@@ -157,28 +157,6 @@ name=Alice&message=Hello+World%21
 ```
 - 上記は「name: Alice」「message: Hello World!」を表す
 
-### urllib について
-- Python標準ライブラリの1つで、URLの操作やHTTP通信を行うためのモジュール群
-- サブモジュールとして `urllib.request`（HTTPリクエスト送信）、`urllib.parse`（URLの分解・組み立て・エンコード/デコード）、`urllib.error`（エラー処理）、`urllib.robotparser`（robots.txt解析）などがある
-- Web APIとの連携や、クエリパラメータのパース・生成、URLエンコード/デコードなどに便利
-
-#### 主な使い方例
-- `urllib.request.urlopen(url)` でHTTPリクエストを送信
-- `urllib.parse.urlencode(dict)` で辞書をクエリ文字列に変換
-- `urllib.parse.parse_qs(query)` でクエリ文字列を辞書に変換
-- `urllib.parse.quote(string)` でURLエンコード、`unquote(string)` でデコード
-
-#### 例
-```python
-from urllib.parse import urlencode, parse_qs, quote, unquote
-
-params = {'name': 'Alice', 'message': 'Hello World!'}
-query = urlencode(params)  # 'name=Alice&message=Hello+World%21'
-parsed = parse_qs(query)   # {'name': ['Alice'], 'message': ['Hello World!']}
-encoded = quote('こんにちは')  # '%E3%81%93%E3%82%93%E3%81%AB%E3%81%A1%E3%81%AF'
-decoded = unquote(encoded) # 'こんにちは'
-```
-
 ### multipart/form-data について
 - ファイルアップロードや複数種類のデータ送信に使われるMIMEタイプ（Content-Type）
 - フォームの`<input type="file">`でファイルを送信する場合は自動的にこの形式になる
@@ -203,3 +181,26 @@ Hello, world!
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
 ```
 - 上記は「name: Alice」と「file: hello.txt（内容: Hello, world!）」を同時に送信している例
+
+### urllib について
+- Python標準ライブラリの1つで、URLの操作やHTTP通信を行うためのモジュール群
+- サブモジュールとして `urllib.request`（HTTPリクエスト送信）、`urllib.parse`（URLの分解・組み立て・エンコード/デコード）、`urllib.error`（エラー処理）、`urllib.robotparser`（robots.txt解析）などがある
+- Web APIとの連携や、クエリパラメータのパース・生成、URLエンコード/デコードなどに便利
+
+#### 主な使い方例
+- `urllib.request.urlopen(url)` でHTTPリクエストを送信
+- `urllib.parse.urlencode(dict)` で辞書をクエリ文字列に変換
+- `urllib.parse.parse_qs(query)` でクエリ文字列を辞書に変換
+- `urllib.parse.quote(string)` でURLエンコード、`unquote(string)` でデコード
+
+#### 例
+```python
+from urllib.parse import urlencode, parse_qs, quote, unquote
+
+params = {'name': 'Alice', 'message': 'Hello World!'}
+query = urlencode(params)  # 'name=Alice&message=Hello+World%21'
+parsed = parse_qs(query)   # {'name': ['Alice'], 'message': ['Hello World!']}
+encoded = quote('こんにちは')  # '%E3%81%93%E3%82%93%E3%81%AB%E3%81%A1%E3%81%AF'
+decoded = unquote(encoded) # 'こんにちは'
+```
+
