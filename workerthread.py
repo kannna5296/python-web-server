@@ -30,7 +30,7 @@ class WorkerThread(Thread):
         super().__init__()
 
         self.client_socket = client_socket
-        self.address = address
+        self.client_address = address
 
     def run(self) -> None:  # Javaでいうvoidみたいなこと
         try:
@@ -71,6 +71,7 @@ class WorkerThread(Thread):
 
         finally:
             # 例外が発生した場合も、発生しなかった場合も、TCP通信のcloseは行う
+            print(f"=== Worker: クライアントとの通信を終了します remote_address: {self.client_address} ===")
             self.client_socket.close()
 
     def parse_request(self, request: bytes) -> Tuple[str, str, str, bytes, bytes]:
