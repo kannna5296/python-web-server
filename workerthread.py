@@ -10,7 +10,7 @@ from mylog import log
 from threading import Thread
 from pprint import pformat
 from io import BytesIO
-from multipart import MultipartParser
+from multipart import MultipartParser #cgiがpython3.13で廃盤になったので、formデータの解析にこれが代替できそう
 
 
 class WorkerThread(Thread):
