@@ -1,3 +1,9 @@
+## 開発環境バージョン情報
+- Python: 3.13.3
+- pip: 25.1.1
+
+---
+
 ## プロジェクト開始手順（コマンドまとめ）
 
 1. リポジトリをクローン
@@ -203,4 +209,5 @@ parsed = parse_qs(query)   # {'name': ['Alice'], 'message': ['Hello World!']}
 encoded = quote('こんにちは')  # '%E3%81%93%E3%82%93%E3%81%AB%E3%81%A1%E3%81%AF'
 decoded = unquote(encoded) # 'こんにちは'
 ```
+
 
