@@ -1,8 +1,9 @@
 import os
+import textwrap
 import traceback
 from datetime import datetime, timezone
 from socket import socket
-from typing import Tuple
+from typing import Optional, Tuple
 from mylog import log
 from threading import Thread
 
@@ -54,23 +55,54 @@ class WorkerThread(Thread):
                 f.write(request)
 
             # リクエストパース
-            method, path, http_version, request_header, request_body = (
+            method, path_string, http_version, request_header, request_body = (
                 self.parse_request(request)
             )
 
-            # 静的ファイルのパスを取得
-            static_file_path = self.get_static_file(path)
+            response_body: bytes
+            content_type: Optional[str]
+            response_line: str
+            # pathが/nowのときは、現在時刻を表示するHTMLを生成する
+            if path_string == "/now":
+                html = f"""\
+                    <html>
+                    <body>
+                        <h1>Now: {datetime.now()}</h1>
+                    </body>
+                    </html>
+                """
+                response_body = textwrap.dedent(html).encode()
 
-            # レスポンスライン、ボディ生成
-            response_line, response_body = self.create_response_body(static_file_path)
+                # Content-Typeを指定
+                content_type = "text/html"
 
-            # レスポンスヘッダ生成
-            response_header = self.create_response_header(path, len(response_body))
+                # レスポンスラインを生成
+                response_line = "HTTP/1.1 200 OK\r\n"
 
-            # ヘッダーとボディを空行でくっつけた上でbytesに変換し、レスポンス全体を生成する
-            response = (
-                response_line + response_header + "\r\n"
-            ).encode() + response_body.encode()
+            # pathがそれ以外のときは、静的ファイルからレスポンスを生成する
+            else:
+                try:
+                    response_body = self.get_static_file_content(path_string)
+
+                    # Content-Typeを指定
+                    content_type = None
+
+                    # レスポンスラインを生成
+                    response_line = "HTTP/1.1 200 OK\r\n"
+
+                except OSError:
+                    # レスポンスを取得できなかった場合は、ログを出力して404を返す
+                    traceback.print_exc()
+
+                    response_body = b"<html><body><h1>404 Not Found</h1></body></html>"
+                    content_type = "text/html"
+                    response_line = "HTTP/1.1 404 Not Found\r\n"
+            
+            # レスポンスヘッダーを生成
+            response_header = self.build_response_header(path_string, response_body, content_type)
+
+            # レスポンス全体を生成する
+            response = (response_line + response_header + "\r\n").encode() + response_body
 
             # ソケット通信はバイト単位でデータを送受信する必要がある
             # クライアントへレスポンスを送信する
@@ -79,12 +111,12 @@ class WorkerThread(Thread):
         except Exception:
             # リクエストの処理中に例外が発生した場合はコンソールにエラーログを出力し、
             # 処理を続行する
-            print("=== リクエストの処理中にエラーが発生しました ===")
+            log("リクエストの処理中にエラーが発生しました")
             traceback.print_exc()  # スタックトレース
 
         finally:
             # 例外が発生した場合も、発生しなかった場合も、TCP通信のcloseは行う
-            print(f"=== Worker: クライアントとの通信を終了します remote_address: {self.client_address} ===")
+            log("クライアントとの通信を終了します remote_address: {}", self.client_address)
             self.client_socket.close()
 
     def parse_request(self, request: bytes) -> Tuple[str, str, str, bytes, bytes]:
@@ -104,7 +136,7 @@ class WorkerThread(Thread):
 
         return method, path, http_version, request_header, request_body
 
-    def get_static_file(self, path: str) -> str:
+    def get_static_file_content(self, path: str) -> bytes:
         """
         リクエストパスから静的ファイルの絶対パスを取得する
 
@@ -114,19 +146,22 @@ class WorkerThread(Thread):
         Returns:
             str: 静的ファイルの絶対パス
         """
-        log("path: " + path)
-        relative_path = path.lstrip("/")
-        log("relative_path: " + relative_path)
+        """
+        リクエストpathから、staticファイルの内容を取得する
+        """
 
+        # pathの先頭の/を削除し、相対パスにしておく
+        relative_path = path.lstrip("/")
         # デフォルトパス指定
         if not relative_path:
             relative_path = "index.html"
+        # ファイルのpathを取得
         static_file_path = os.path.join(self.STATIC_ROOT, relative_path)
-        log("static_file_path: " + static_file_path)
 
-        return static_file_path
+        with open(static_file_path, "rb") as f:
+            return f.read()
 
-    def create_response_body(self, static_file_path: str) -> Tuple[str, str]:
+    def create_response_body(self, path_string: str) -> Tuple[str, str]:
         """
         静的ファイルからレスポンスボディを生成する
 
@@ -139,7 +174,7 @@ class WorkerThread(Thread):
         """
         try:
             # ファイルからレスポンスボディを生成　バイナリ、読み取り専用モード
-            with open(static_file_path, "rb") as f:
+            with open(path_string, "rb") as f:
                 response_body = f.read()
             # レスポンスラインを生成
             response_line = "HTTP/1.1 200 OK\r\n"
@@ -150,8 +185,8 @@ class WorkerThread(Thread):
             response_line = "HTTP/1.1 404 Not Found\r\n"
 
         return response_line, response_body.decode()
-
-    def create_response_header(self, path: str, content_length: int) -> str:
+        
+    def build_response_header(self, path: str, response_body: bytes, content_type: Optional[str]) -> str:
         """
         HTTPレスポンスヘッダーを生成する
 
@@ -173,7 +208,7 @@ class WorkerThread(Thread):
         response_header = ""
         response_header += f"Date: {datetime.now(timezone.utc).strftime('%a, %d %b %Y %H:%M:%S GMT')}\r\n"
         response_header += "Host: HenaServer/0.1\r\n"
-        response_header += f"Content-Length: {content_length}\r\n"
+        response_header += f"Content-Length: {len(response_body)}\r\n"
         response_header += "Connection: Close\r\n"
         response_header += f"Content-Type: {content_type}\r\n"
 
