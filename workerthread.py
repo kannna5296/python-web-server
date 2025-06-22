@@ -9,6 +9,8 @@ from typing import Optional, Tuple
 from mylog import log
 from threading import Thread
 from pprint import pformat
+from io import BytesIO
+from multipart import MultipartParser
 
 
 class WorkerThread(Thread):
@@ -110,7 +112,6 @@ class WorkerThread(Thread):
             elif path_string == "/parameters":
                 if method == "GET":
                     response_body = b"<html><body><h1>405 Method Not Allowed</h1></body></html>"
-                    content_type = "text/html; charset=UTF-8"
                     response_line = "HTTP/1.1 405 Method Not Allowed\r\n"
                 elif method == "POST":
                     post_params = parse_qs(request_body.decode())
@@ -129,6 +130,36 @@ class WorkerThread(Thread):
 
                 # レスポンスラインを生成
                 response_line = "HTTP/1.1 200 OK\r\n"
+            ## 書かれてないけど宿題：ファイル送信の中身をやってみる
+            elif path_string == "/upload":
+                response_line = ""  # 初期化
+                if method == "GET":
+                    response_body = b"<html><body><h1>405 Method Not Allowed</h1></body></html>"
+                    response_line = "HTTP/1.1 405 Method Not Allowed\r\n"
+                elif method == "POST":
+                    # Content-Typeヘッダーからboundaryを取得
+                    content_type = request_header.get("Content-Type", "")
+                    # boundaryの抽出
+                    ct_str = content_type if content_type is not None else ""
+                    m = re.search(r"boundary=([-_a-zA-Z0-9]+)", ct_str)
+                    if not m:
+                        response_body = b"<html><body><h1>400 Bad Request (no boundary)</h1></body></html>"
+                        response_line = "HTTP/1.1 400 Bad Request\r\n"
+                    else:
+                        boundary = m.group(1).encode()
+                        parser = MultipartParser(BytesIO(request_body), boundary)
+                        html = "<html><body><h1>multipart/form-data パース結果 (multipart lib)</h1><ul>"
+                        for part in parser:
+                            if part.filename:
+                                html += f"<li>{part.name}: ファイル名={part.filename}, サイズ={len(part.value)}バイト</li>"
+                            else:
+                                html += f"<li>{part.name}: {part.value.decode('utf-8', 'ignore')}</li>"
+                        html += "</ul></body></html>"
+                        response_body = textwrap.dedent(html).encode()
+                        response_line = "HTTP/1.1 200 OK\r\n"
+                # Content-Typeを指定
+                content_type = "text/html, charset=UTF-8"
+                # レスポンスラインを生成（上でセット済み）
             # pathがそれ以外のときは、静的ファイルからレスポンスを生成す
             else:
                 try:
