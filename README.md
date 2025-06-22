@@ -123,3 +123,22 @@ client_socket.send(response)
 request = client_socket.recv(4096)  # bytes型
 method, path, http_version = request.decode().split(" ")  # str型に変換
 ```
+
+### Pythonモジュール・ライブラリまとめ
+
+#### re（正規表現）
+- Pythonの正規表現を扱うためのモジュール
+- 文字列のパターンマッチング、検索、置換などに使用
+- 例: `re.split(r": *", header_row, maxsplit=1)` → `:` とその後の空白で文字列を分割
+
+#### textwrap
+- テキストの整形を行うモジュール
+- `textwrap.dedent()` でインデントを削除
+
+#### pprint
+- データ構造を見やすく出力するモジュール
+- `pformat()` で辞書やリストを整形して文字列として取得
+
+#### traceback
+- 例外の詳細情報（スタックトレース）を扱うモジュール
+- `traceback.print_exc()` で現在の例外の詳細を出力
