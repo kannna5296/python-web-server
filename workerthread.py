@@ -6,6 +6,7 @@ from socket import socket
 from typing import Optional, Tuple
 from mylog import log
 from threading import Thread
+from pprint import pformat
 
 
 class WorkerThread(Thread):
@@ -79,7 +80,31 @@ class WorkerThread(Thread):
                 # レスポンスラインを生成
                 response_line = "HTTP/1.1 200 OK\r\n"
 
-            # pathがそれ以外のときは、静的ファイルからレスポンスを生成する
+            # pathが/show_requestのときは、HTTPリクエストの内容を表示するHTMLを生成する
+            elif path_string == "/show_request":
+                html = f"""\
+                    <html>
+                    <body>
+                        <h1>Request Line:</h1>
+                        <p>
+                            {method} {path_string} {http_version}
+                        </p>
+                        <h1>Headers:</h1>
+                        <pre>{pformat(request_header)}</pre>
+                        <h1>Body:</h1>
+                        <pre>{request_body.decode("utf-8", "ignore")}</pre>
+                        
+                    </body>
+                    </html>
+                """
+                response_body = textwrap.dedent(html).encode()
+
+                # Content-Typeを指定
+                content_type = "text/html"
+
+                # レスポンスラインを生成
+                response_line = "HTTP/1.1 200 OK\r\n"
+            # pathがそれ以外のときは、静的ファイルからレスポンスを生成す
             else:
                 try:
                     response_body = self.get_static_file_content(path_string)
@@ -197,7 +222,7 @@ class WorkerThread(Thread):
         Returns:
             str: 生成されたHTTPレスポンスヘッダー
         """
-        if path_string in ("", "/", "/now"):
+        if path_string in ("", "/", "/now", "/show_request"):
             ext = "html"
         else:
             ext = path_string.rsplit(".", maxsplit=1)[-1] if "." in path_string else ""
