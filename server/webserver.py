@@ -1,8 +1,6 @@
 import os
 import socket
-import datetime
-import traceback
-from utils import log
+from mylog import log
 from workerthread import WorkerThread
 
 

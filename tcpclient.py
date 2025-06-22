@@ -1,5 +1,5 @@
 import socket
-from utils import log
+from mylog import log
 
 
 class TCPClient:
