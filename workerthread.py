@@ -1,6 +1,7 @@
 import os
 import textwrap
 import traceback
+import re
 from datetime import datetime, timezone
 from socket import socket
 from typing import Optional, Tuple
@@ -57,7 +58,7 @@ class WorkerThread(Thread):
 
             # リクエストパース
             method, path_string, http_version, request_header, request_body = (
-                self.parse_request(request)
+                self.parse_http_request(request)
             )
 
             response_body: bytes
@@ -144,7 +145,7 @@ class WorkerThread(Thread):
             log("クライアントとの通信を終了します remote_address: {}", self.client_address)
             self.client_socket.close()
 
-    def parse_request(self, request: bytes) -> Tuple[str, str, str, bytes, bytes]:
+    def parse_http_request(self, request: bytes) -> Tuple[str, str, str, dict, bytes]:
         """
         HTTPリクエストをパースして各要素を抽出する
 
@@ -152,14 +153,23 @@ class WorkerThread(Thread):
             request: クライアントから受信したHTTPリクエスト（バイト列）
 
         Returns:
-            Tuple[str, str, str, bytes, bytes]: 
+            Tuple[str, str, str, dict, bytes]: 
             (HTTPメソッド, パス, HTTPバージョン, リクエストヘッダー, リクエストボディ)
         """
+
         request_line, remain = request.split(b"\r\n", maxsplit=1)
         request_header, request_body = remain.split(b"\r\n\r\n", maxsplit=1)
+
+        # リクエストラインを文字列に変換してパースする
         method, path, http_version = request_line.decode().split(" ")
 
-        return method, path, http_version, request_header, request_body
+        # リクエストヘッダーを辞書にパースする
+        headers = {}
+        for header_row in request_header.decode().split("\r\n"):
+            key, value = re.split(r": *", header_row, maxsplit=1)
+            headers[key] = value
+
+        return method, path, http_version, headers, request_body
 
     def get_static_file_content(self, path: str) -> bytes:
         """
