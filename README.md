@@ -1,3 +1,7 @@
+## 
+* [伸び悩んでいる3年目Webエンジニアのための、Python Webアプリケーション自作入門](https://zenn.dev/bigen1925/books/introduction-to-web-application-with-python/viewer/preface)をやってみるリポジトリ。
+* 6/21 ~ 6/23で実装終了。
+
 ## 開発環境バージョン情報
 - Python: 3.13.3
 - pip: 25.1.1
