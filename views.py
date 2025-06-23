@@ -11,9 +11,7 @@ from templates.renderer import render
 def now(request: HttpRequest) -> HttpResponse:
 
     context = {"now": datetime.now()}
-    html = render("now.html", context)
-
-    body = textwrap.dedent(html).encode()
+    body = render("now.html", context)
     content_type = "text/html, charset=UTF-8"
 
     return HttpResponse(body=body, content_type=content_type, status_code=200)

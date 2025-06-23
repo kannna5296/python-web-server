@@ -74,6 +74,11 @@ class Worker(Thread):
             # view関数をもとにレスポンス(Html含む)を作る
             response = view(request)
 
+            # TODO 全部bytesかstrかどっちか扱って良いようにしたい
+            # レスポンスボディを変換
+            if isinstance(response.body, str):
+                response.body = response.body.encode()
+
             # レスポンスラインを生成
             response_line = self.build_response_line(response)
 
@@ -81,9 +86,7 @@ class Worker(Thread):
             response_header = self.build_response_header(response, request)
 
             # レスポンス全体を生成する
-            response_bytes = (
-                response_line + response_header + "\r\n"
-            ).encode() + response.body
+            response_bytes = (response_line + response_header + "\r\n").encode() + response.body
 
             # ソケット通信はバイト単位でデータを送受信する必要がある
             # クライアントへレスポンスを送信する
