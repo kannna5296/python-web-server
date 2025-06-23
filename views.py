@@ -13,6 +13,7 @@ def now(request: HttpRequest) -> HttpResponse:
     body = render("now.html", context)
     return HttpResponse(body=body)
 
+
 def show_request(request: HttpRequest) -> HttpResponse:
     context = {
         "now": datetime.now(),
@@ -20,8 +21,8 @@ def show_request(request: HttpRequest) -> HttpResponse:
         "path": request.path,
         "http_version": request.http_version,
         "headers": pformat(request.headers),
-        "body": request.body.decode("utf-8", "ignore")
-        }
+        "body": request.body.decode("utf-8", "ignore"),
+    }
     body = render("show_request.html", context)
     return HttpResponse(body=body)
 
