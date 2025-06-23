@@ -237,4 +237,28 @@ else:
     print("見つからなかった…")
 ```
 
+### Callable[[HttpRequest], HttpResponse] について
+- Pythonの型ヒントで「Callable[[引数型], 戻り値型]」は「この関数はこういう引数・戻り値ですよ」と明示できる。
+- 例：Callable[[HttpRequest], HttpResponse] は「HttpRequestを受け取ってHttpResponseを返す関数（コールバック）」を表す。
+- 関数を引数に渡したり、辞書やリストで管理したいときに型安全に書けるので便利。
+- 型チェックや補完も効くので、規模が大きくなっても安心。
+
+#### 例
+```python
+from typing import Callable
+
+def handle_request(func: Callable[[HttpRequest], HttpResponse]):
+    ...
+```
+
+#### Callableの[]の意味について
+- Callable[[A, B], C] の1個目の[]は「引数の型リスト」を表す（複数・順番あり）。
+- 2個目は「戻り値の型」そのもの（単体）。
+- 例：Callable[[int, str], bool] は「int型とstr型を引数に取り、bool型を返す関数」。
+- 引数がない場合は Callable[[], 戻り値型] となる。
+
+#### Callable[[HttpRequest], HttpResponse] とは？
+- 「HttpRequest型を引数に取り、HttpResponse型を返す関数」を型ヒントで表す書き方。
+- 関数を引数や値として扱うとき、型安全にできて便利。
+
 

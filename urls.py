@@ -1,9 +1,10 @@
 import views
+from henango.urls.pattern import UrlPattern
 
 # pathとview関数の対応
-URL_VIEW = {
-    "/now": views.now,
-    "/show_request": views.show_request,
-    "/parameters": views.parameters,
-    "/user/<user_id>/profile": views.user_profile,
-}
+url_patterns = [
+    UrlPattern("/now", views.now),
+    UrlPattern("/show_request", views.show_request),
+    UrlPattern("/parameters", views.parameters),
+    UrlPattern("/user/<user_id>/profile", views.user_profile),
+]

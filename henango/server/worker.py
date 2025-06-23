@@ -11,7 +11,7 @@ from mylog import log
 from threading import Thread
 from settings import STATIC_ROOT
 import settings
-from urls import URL_VIEW
+from urls import url_patterns
 
 
 class Worker(Thread):
@@ -68,11 +68,11 @@ class Worker(Thread):
             request = self.parse_http_request(request_bytes)
 
             # for-elseとやらがあるPython
-            for url_pattern, view in URL_VIEW.items():
-                match = self.url_match(url_pattern, request.path)
-                # マッチするやつがあればviewパッケージからレスポンス生成
+            for url_pattern in url_patterns:
+                match = url_pattern.match(request.path)
                 if match:
                     request.params.update(match.groupdict())
+                    view = url_pattern.view
                     response = view(request)
                     break
             # マッチするやつない場合は静的ファイルを探す
@@ -247,9 +247,3 @@ class Worker(Thread):
         response_header += f"Content-Type: {response.content_type}\r\n"
 
         return response_header
-
-    def url_match(self, url_pattern: str, path: str) -> Optional[re.Match]:
-        # URLパターンを正規表現パターンに変換する
-        # ex) '/user/<user_id>/profile' => '/user/(?P<user_id>[^/]+)/profile'
-        re_pattern = re.sub(r"<(.+?)>", r"(?P<\1>[^/]+)", url_pattern)
-        return re.match(re_pattern, path)
