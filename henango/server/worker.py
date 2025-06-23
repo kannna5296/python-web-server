@@ -34,6 +34,7 @@ class Worker(Thread):
         200: "200 OK",
         404: "404 Not Found",
         405: "405 Method Not Allowed",
+        302: "302 Found",
     }
 
     def __init__(self, client_socket: socket, address: Tuple[str, int]):
