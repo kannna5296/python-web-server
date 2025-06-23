@@ -2,6 +2,7 @@ import socket
 from mylog import log
 from henango.server.worker import Worker
 
+
 class Server:
     """
     WEBサーバを表す
