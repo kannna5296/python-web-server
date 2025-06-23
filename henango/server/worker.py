@@ -236,7 +236,7 @@ class Worker(Thread):
                 ext = ""
             # 拡張子からMIME Typeを取得
             # 知らない対応していない拡張子の場合はoctet-streamとする
-            response.content_type = self.MIME_TYPES.get(ext, "application/octet-stream")
+            response.content_type = self.MIME_TYPES.get(ext, "text/html; charset=UTF-8")
 
         # レスポンスヘッダーを生成
         response_header = ""
