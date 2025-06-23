@@ -7,4 +7,5 @@ url_patterns = [
     UrlPattern("/show_request", views.show_request),
     UrlPattern("/parameters", views.parameters),
     UrlPattern("/user/<user_id>/profile", views.user_profile),
+    UrlPattern("/set_cookie", views.set_cookie),
 ]

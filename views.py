@@ -44,3 +44,7 @@ def user_profile(request: HttpRequest) -> HttpResponse:
     context = {"user_id": request.params["user_id"]}
     body = render("user_profile.html", context)
     return HttpResponse(body=body)
+
+
+def set_cookie(request: HttpRequest) -> HttpResponse:
+    return HttpResponse(headers={"Set-Cookie": "username=TARO"})
