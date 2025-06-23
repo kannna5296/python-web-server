@@ -9,12 +9,9 @@ from templates.renderer import render
 
 
 def now(request: HttpRequest) -> HttpResponse:
-
     context = {"now": datetime.now()}
     body = render("now.html", context)
-    content_type = "text/html, charset=UTF-8"
-
-    return HttpResponse(body=body, content_type=content_type, status_code=200)
+    return HttpResponse(body=body)
 
 
 def show_request(request: HttpRequest) -> HttpResponse:

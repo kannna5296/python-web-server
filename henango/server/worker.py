@@ -86,7 +86,9 @@ class Worker(Thread):
             response_header = self.build_response_header(response, request)
 
             # レスポンス全体を生成する
-            response_bytes = (response_line + response_header + "\r\n").encode() + response.body
+            response_bytes = (
+                response_line + response_header + "\r\n"
+            ).encode() + response.body
 
             # ソケット通信はバイト単位でデータを送受信する必要がある
             # クライアントへレスポンスを送信する
@@ -215,11 +217,13 @@ class Worker(Thread):
             # pathから拡張子を取得
             if "." in request.path:
                 ext = request.path.rsplit(".", maxsplit=1)[-1]
+                # 拡張子からMIME Typeを取得
+                # 知らない対応していない拡張子の場合はoctet-streamとする
+                response.content_type = self.MIME_TYPES.get(
+                    ext, "application/octet-stream"
+                )
             else:
-                ext = ""
-            # 拡張子からMIME Typeを取得
-            # 知らない対応していない拡張子の場合はoctet-streamとする
-            response.content_type = self.MIME_TYPES.get(ext, "text/html; charset=UTF-8")
+                response.content_type = "text/html; charset=UTF-8"
 
         # レスポンスヘッダーを生成
         response_header = ""
