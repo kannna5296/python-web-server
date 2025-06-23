@@ -262,4 +262,39 @@ def handle_request(func: Callable[[HttpRequest], HttpResponse]):
 - 「HttpRequest型を引数に取り、HttpResponse型を返す関数」を型ヒントで表す書き方。
 - 関数を引数や値として扱うとき、型安全にできて便利。
 
+# multipart/form-dataのリクエスト例
+
+フォームからファイルや複数の値を送信すると、下記のようなBOUNDARY付きのデータがサーバに送信されます。
+
+```
+------WebKitFormBoundaryYHFpLrDsspxPM6RI
+Content-Disposition: form-data; name="radio_name"
+
+radio2
+------WebKitFormBoundaryYHFpLrDsspxPM6RI
+Content-Disposition: form-data; name="check_name"
+
+check4
+------WebKitFormBoundaryYHFpLrDsspxPM6RI
+Content-Disposition: form-data; name="hidden_name"
+
+hidden_value_日本語
+------WebKitFormBoundaryYHFpLrDsspxPM6RI
+Content-Disposition: form-data; name="file_name"; filename="データとインフラ_インボイス.pdf"
+Content-Type: application/pdf
+
+
+------WebKitFormBoundaryYHFpLrDsspxPM6RI
+Content-Disposition: form-data; name="submit_name"
+
+送信
+------WebKitFormBoundaryYHFpLrDsspxPM6RI--
+```
+
+- 各パートは`------WebKitFormBoundary...`で区切られます（boundaryはリクエストごとに異なります）。
+- `Content-Disposition`ヘッダーでnameやfilenameが指定され、ファイルの場合は`Content-Type`も付きます。
+- サーバ側ではmultipartパーサでこれを分解し、各値やファイル情報を取得します。
+
+この形式は、`enctype="multipart/form-data"`のフォーム送信やAPIクライアントのファイルアップロードで使われます。
+
 
