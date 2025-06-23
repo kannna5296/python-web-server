@@ -1,9 +1,8 @@
 import socket
 from mylog import log
-from workerthread import WorkerThread
+from henango.server.worker import Worker
 
-
-class WebServer:
+class Server:
     """
     WEBサーバを表す
     """
@@ -40,7 +39,7 @@ class WebServer:
                     address,
                 )
 
-                thread = WorkerThread(client_socket, address)
+                thread = Worker(client_socket, address)
                 thread.start()
         finally:
             log("サーバ停止しました")
