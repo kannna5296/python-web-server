@@ -70,26 +70,9 @@ class Worker(Thread):
 
             # URL解決
             view = UrlResolver().resolve(request)
-            if view:
-                response = view(request)
-            # マッチするやつない場合は静的ファイルを探す
-            else:
-                try:
-                    response_body = self.get_static_file_content(request.path)
-                    content_type = None
-                    response = HttpResponse(
-                        body=response_body, content_type=content_type, status_code=200
-                    )
-                # それでもない場合は404
-                except OSError:
-                    # レスポンスを取得できなかった場合は、ログを出力して404を返す
-                    traceback.print_exc()
 
-                    response_body = b"<html><body><h1>404 Not Found</h1></body></html>"
-                    content_type = "text/html;"
-                    response = HttpResponse(
-                        body=response_body, content_type=content_type, status_code=404
-                    )
+            # view関数をもとにレスポンス(Html含む)を作る
+            response = view(request)
 
             # レスポンスラインを生成
             response_line = self.build_response_line(response)
