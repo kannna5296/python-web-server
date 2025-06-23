@@ -1,23 +1,12 @@
-import os
 import socket
 from mylog import log
 from workerthread import WorkerThread
 
 
-# ソケット通信(=トランスポート層)
-# TCP/IPで言うと
-#   TCP/UDPを使うところ
-#   インターネット層(IP)の一個上
-#   アプリケーション層(HTTP,SNTPとか)の一個下
 class WebServer:
     """
     WEBサーバを表す
     """
-
-    # 実行ファイルのあるディレクトリ
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    # 静的配信するファイルを置くディレクトリ
-    STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
     # 拡張子とMIME Typeの対応
     MIME_TYPES = {
@@ -55,8 +44,3 @@ class WebServer:
                 thread.start()
         finally:
             log("サーバ停止しました")
-
-
-if __name__ == "__main__":
-    server = WebServer()
-    server.serve()
