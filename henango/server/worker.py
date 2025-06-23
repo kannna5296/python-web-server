@@ -67,14 +67,15 @@ class Worker(Thread):
             # HTTPリクエストをパースする
             request = self.parse_http_request(request_bytes)
 
-            response_body: bytes
-            content_type: Optional[str]
-            response_line: str
-            # pathに対応するview関数があれば、関数を取得して呼び出し、レスポンスを生成する
-            if request.path in URL_VIEW:
-                view = URL_VIEW[request.path]
-                response = view(request)
-            # pathがそれ以外のときは、静的ファイルからレスポンスを生成す
+            # for-elseとやらがあるPython
+            for url_pattern, view in URL_VIEW.items():
+                match = self.url_match(url_pattern, request.path)
+                # マッチするやつがあればviewパッケージからレスポンス生成
+                if match:
+                    request.params.update(match.groupdict())
+                    response = view(request)
+                    break
+            # マッチするやつない場合は静的ファイルを探す
             else:
                 try:
                     response_body = self.get_static_file_content(request.path)
@@ -82,6 +83,7 @@ class Worker(Thread):
                     response = HttpResponse(
                         body=response_body, content_type=content_type, status_code=200
                     )
+                # それでもない場合は404
                 except OSError:
                     # レスポンスを取得できなかった場合は、ログを出力して404を返す
                     traceback.print_exc()
@@ -225,12 +227,16 @@ class Worker(Thread):
         Returns:
             str: 生成されたHTTPレスポンスヘッダー
         """
-        path = request.path
-        if path in ("", "/", "/now", "/show_request", "/parameters"):
-            ext = "html"
-        else:
-            ext = path.rsplit(".", maxsplit=1)[-1] if "." in path else ""
-        content_type = self.MIME_TYPES.get(ext, "application/octet-stream")
+        # Content-Typeが指定されていない場合はpathから特定する
+        if response.content_type is None:
+            # pathから拡張子を取得
+            if "." in request.path:
+                ext = request.path.rsplit(".", maxsplit=1)[-1]
+            else:
+                ext = ""
+            # 拡張子からMIME Typeを取得
+            # 知らない対応していない拡張子の場合はoctet-streamとする
+            response.content_type = self.MIME_TYPES.get(ext, "application/octet-stream")
 
         # レスポンスヘッダーを生成
         response_header = ""
@@ -238,6 +244,12 @@ class Worker(Thread):
         response_header += "Host: HenaServer/0.1\r\n"
         response_header += f"Content-Length: {len(response.body)}\r\n"
         response_header += "Connection: Close\r\n"
-        response_header += f"Content-Type: {content_type}\r\n"
+        response_header += f"Content-Type: {response.content_type}\r\n"
 
         return response_header
+
+    def url_match(self, url_pattern: str, path: str) -> Optional[re.Match]:
+        # URLパターンを正規表現パターンに変換する
+        # ex) '/user/<user_id>/profile' => '/user/(?P<user_id>[^/]+)/profile'
+        re_pattern = re.sub(r"<(.+?)>", r"(?P<\1>[^/]+)", url_pattern)
+        return re.match(re_pattern, path)
