@@ -1,6 +1,7 @@
 import os
 import inspect
 
+
 def log(msg, *args):
     """
     見やすくログを出すメソッド。プレースホルダ対応。

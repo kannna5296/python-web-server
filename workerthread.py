@@ -10,7 +10,9 @@ from mylog import log
 from threading import Thread
 from pprint import pformat
 from io import BytesIO
-from multipart import MultipartParser #cgiがpython3.13で廃盤になったので、formデータの解析にこれが代替できそう
+from multipart import (
+    MultipartParser,
+)  # cgiがpython3.13で廃盤になったので、formデータの解析にこれが代替できそう
 
 
 class WorkerThread(Thread):
@@ -48,7 +50,7 @@ class WorkerThread(Thread):
     def run(self) -> None:
         """
         ワーカースレッドのメイン処理を実行する
-        
+
         クライアントからのリクエストを受信し、適切なレスポンスを返す。
         例外が発生した場合でもクライアントとの接続は確実にクローズする。
         """
@@ -111,7 +113,9 @@ class WorkerThread(Thread):
             # pathがそれ以外のときは、静的ファイルからレスポンスを生成す
             elif path_string == "/parameters":
                 if method == "GET":
-                    response_body = b"<html><body><h1>405 Method Not Allowed</h1></body></html>"
+                    response_body = (
+                        b"<html><body><h1>405 Method Not Allowed</h1></body></html>"
+                    )
                     response_line = "HTTP/1.1 405 Method Not Allowed\r\n"
                 elif method == "POST":
                     post_params = parse_qs(request_body.decode())
@@ -134,7 +138,9 @@ class WorkerThread(Thread):
             elif path_string == "/upload":
                 response_line = ""  # 初期化
                 if method == "GET":
-                    response_body = b"<html><body><h1>405 Method Not Allowed</h1></body></html>"
+                    response_body = (
+                        b"<html><body><h1>405 Method Not Allowed</h1></body></html>"
+                    )
                     response_line = "HTTP/1.1 405 Method Not Allowed\r\n"
                 elif method == "POST":
                     # Content-Typeヘッダーからboundaryを取得
@@ -178,12 +184,16 @@ class WorkerThread(Thread):
                     response_body = b"<html><body><h1>404 Not Found</h1></body></html>"
                     content_type = "text/html, charset=UTF-8"
                     response_line = "HTTP/1.1 404 Not Found\r\n"
-            
+
             # レスポンスヘッダーを生成
-            response_header = self.build_response_header(path_string, response_body, content_type)
+            response_header = self.build_response_header(
+                path_string, response_body, content_type
+            )
 
             # レスポンス全体を生成する
-            response = (response_line + response_header + "\r\n").encode() + response_body
+            response = (
+                response_line + response_header + "\r\n"
+            ).encode() + response_body
 
             # ソケット通信はバイト単位でデータを送受信する必要がある
             # クライアントへレスポンスを送信する
@@ -197,7 +207,10 @@ class WorkerThread(Thread):
 
         finally:
             # 例外が発生した場合も、発生しなかった場合も、TCP通信のcloseは行う
-            log("クライアントとの通信を終了します remote_address: {}", self.client_address)
+            log(
+                "クライアントとの通信を終了します remote_address: {}",
+                self.client_address,
+            )
             self.client_socket.close()
 
     def parse_http_request(self, request: bytes) -> Tuple[str, str, str, dict, bytes]:
@@ -208,7 +221,7 @@ class WorkerThread(Thread):
             request: クライアントから受信したHTTPリクエスト（バイト列）
 
         Returns:
-            Tuple[str, str, str, dict, bytes]: 
+            Tuple[str, str, str, dict, bytes]:
             (HTTPメソッド, パス, HTTPバージョン, リクエストヘッダー, リクエストボディ)
         """
 
@@ -275,8 +288,10 @@ class WorkerThread(Thread):
             response_line = "HTTP/1.1 404 Not Found\r\n"
 
         return response_line, response_body.decode()
-        
-    def build_response_header(self, path_string: str, response_body: bytes, content_type: Optional[str]) -> str:
+
+    def build_response_header(
+        self, path_string: str, response_body: bytes, content_type: Optional[str]
+    ) -> str:
         """
         HTTPレスポンスヘッダーを生成する
 
