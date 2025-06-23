@@ -1,10 +1,12 @@
-from typing import Optional, Union
+from typing import Optional, Union, List
+
+from henango.http.cookie import Cookie
 
 
 class HttpResponse:
     status_code: int
     headers: dict
-    cookies: dict
+    cookies: List[Cookie]
     content_type: Optional[str]
     body: Union[bytes, str]
 
@@ -12,7 +14,7 @@ class HttpResponse:
         self,
         status_code: int = 200,
         headers: dict = {},
-        cookies: dict = {},
+        cookies: List[Cookie] = [],
         content_type: Optional[str] = None,
         body: Union[bytes, str] = b"",
     ):

@@ -3,6 +3,7 @@ from datetime import datetime
 from pprint import pformat
 from urllib.parse import parse_qs
 
+from henango.http.cookie import Cookie
 from henango.http.request import HttpRequest
 from henango.http.response import HttpResponse
 from templates.renderer import render
@@ -60,10 +61,13 @@ def login(request: HttpRequest) -> HttpResponse:
         username = post_params["username"][0]
         email = post_params["email"][0]
 
+        cookies = [
+            Cookie(name="username", value=username, max_age=30),
+            Cookie(name="email", value=email, max_age=30),
+        ]
+
         return HttpResponse(
-            status_code=302,
-            headers={"Location": "/welcome"},
-            cookies={"username": username, "email": email},
+            status_code=302, headers={"Location": "/welcome"}, cookies=cookies
         )
     else:
         body = b"<html><body><h1>405 Method Not Allowed</h1></body></html>"
