@@ -12,7 +12,6 @@ from threading import Thread
 from urls import URL_VIEW
 
 
-
 class WorkerThread(Thread):
     """
     WEBサーバが期待される挙動をするスレッドを定義
