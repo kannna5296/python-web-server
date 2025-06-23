@@ -58,30 +58,25 @@ def login(request: HttpRequest) -> HttpResponse:
     elif request.method == "POST":
         post_params = parse_qs(request.body.decode())
         username = post_params["username"][0]
+        email = post_params["email"][0]
 
-        headers = {"Location": "/welcome", "Set-Cookie": f"username={username}"}
-        return HttpResponse(status_code=302, headers=headers)
+        return HttpResponse(
+            status_code=302,
+            headers={"Location": "/welcome"},
+            cookies={"username": username, "email": email},
+        )
     else:
         body = b"<html><body><h1>405 Method Not Allowed</h1></body></html>"
         return HttpResponse(body=body, status_code=405)
 
 
 def welcome(request: HttpRequest) -> HttpResponse:
-    cookie_header = request.headers.get("Cookie", None)
-
-    if not cookie_header:
-        return HttpResponse(status_code=302, headers={"Location": "/login"})
-
-    cookie_strings = cookie_header.split("; ")
-    cookies = {}
-    for cookie_string in cookie_strings:
-        name, value = cookie_string.split("=", maxsplit=1)
-        cookies[name] = value
-
-    if "username" not in cookies:
+    if "username" not in request.cookies:
         return HttpResponse(status_code=302, headers={"Location": "/login"})
 
     # Welcome画面を表示
-    body = render("welcome.html", context={"username": cookies["username"]})
+    username = request.cookies["username"]
+    email = request.cookies["email"]
+    body = render("welcome.html", context={"username": username, "email": email})
 
     return HttpResponse(body=body)
