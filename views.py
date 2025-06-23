@@ -5,19 +5,15 @@ from urllib.parse import parse_qs
 
 from henango.http.request import HttpRequest
 from henango.http.response import HttpResponse
+from template.renderer import render
 
 
 def now(request: HttpRequest) -> HttpResponse:
-    html = f"""\
-        <html>
-        <body>
-            <h1>Now: {datetime.now()}</h1>
-        </body>
-        </html>
-    """
-    body = textwrap.dedent(html).encode()
 
-    # Content-Typeを指定
+    context = {"now": datetime.now()}
+    html = render("./template/now.html", context)
+
+    body = textwrap.dedent(html).encode()
     content_type = "text/html, charset=UTF-8"
 
     return HttpResponse(body=body, content_type=content_type, status_code=200)
