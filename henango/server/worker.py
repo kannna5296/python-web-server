@@ -7,6 +7,7 @@ from socket import socket
 from typing import Optional, Tuple
 from henango.http.request import HttpRequest
 from henango.http.response import HttpResponse
+from henango.urls.resolver import UrlResolver
 from mylog import log
 from threading import Thread
 from settings import STATIC_ROOT
@@ -67,14 +68,10 @@ class Worker(Thread):
             # HTTPリクエストをパースする
             request = self.parse_http_request(request_bytes)
 
-            # for-elseとやらがあるPython
-            for url_pattern in url_patterns:
-                match = url_pattern.match(request.path)
-                if match:
-                    request.params.update(match.groupdict())
-                    view = url_pattern.view
-                    response = view(request)
-                    break
+            # URL解決
+            view = UrlResolver().resolve(request)
+            if view:
+                response = view(request)
             # マッチするやつない場合は静的ファイルを探す
             else:
                 try:

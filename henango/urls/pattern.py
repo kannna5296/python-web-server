@@ -8,7 +8,7 @@ from henango.http.response import HttpResponse
 
 class UrlPattern:
     pattern: str
-    view: Callable[[HttpRequest], HttpResponse]
+    view: Callable[[HttpRequest], HttpResponse]  # 関数を引数とするイメージ
 
     def __init__(self, pattern: str, view: Callable[[HttpRequest], HttpResponse]):
         self.pattern = pattern
