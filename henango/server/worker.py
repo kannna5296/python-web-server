@@ -58,9 +58,7 @@ class Worker(Thread):
         例外が発生した場合でもクライアントとの接続は確実にクローズする。
         """
         try:
-            request_bytes = self.client_socket.recv(
-                4096
-            )  # データを4096バイトずつ受け取る
+            request_bytes = self.receive_full_request()
 
             # クライアントから送られてきたデータをファイルに書き出す
             with open("server_recv.txt", "wb") as f:
@@ -265,3 +263,44 @@ class Worker(Thread):
             response_header += f"{header_name}: {header_value}\r\n"
 
         return response_header
+
+    def receive_full_request(self) -> bytes:
+        """
+        クライアントからHTTPリクエスト全体（ヘッダー＋ボディ）を受信する
+        Returns:
+            bytes: リクエスト全体
+        """
+        # まずヘッダー部だけ受信
+        request_bytes = b""
+        while b"\r\n\r\n" not in request_bytes:
+            chunk = self.client_socket.recv(4096)
+            if not chunk:
+                break
+            request_bytes += chunk
+
+        # ヘッダーとボディを分離
+        if b"\r\n\r\n" in request_bytes:
+            header_part, _, body_part = request_bytes.partition(b"\r\n\r\n")
+        else:
+            header_part = request_bytes
+            body_part = b""
+
+        headers = header_part.decode(errors="ignore").split("\r\n")
+        content_length = 0
+        for h in headers:
+            if h.lower().startswith("content-length:"):
+                try:
+                    content_length = int(h.split(":", 1)[1].strip())
+                except Exception:
+                    content_length = 0
+
+        # 既に受信済みのbody長さ
+        body = body_part
+        while len(body) < content_length:
+            chunk = self.client_socket.recv(4096)
+            if not chunk:
+                break
+            body += chunk
+
+        # 最終的なリクエスト全体
+        return header_part + b"\r\n\r\n" + body
